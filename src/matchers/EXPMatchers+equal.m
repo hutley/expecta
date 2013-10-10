@@ -9,6 +9,17 @@ EXPMatcherImplementationBegin(_equal, (id expected)) {
       if(EXPIsNumberFloat((NSNumber *)actual) || EXPIsNumberFloat((NSNumber *)expected)) {
         return [(NSNumber *)actual floatValue] == [(NSNumber *)expected floatValue];
       }
+    } else if ([actual isKindOfClass:[NSString class]] && [expected isKindOfClass:[NSNumber class]])
+    {
+        @try {
+            
+            NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
+            NSNumber* actualNumber = [formatter numberFromString:actual];
+            return (actualNumber == expected || [actualNumber isEqual:expected]);
+        }
+        @catch (NSException *exception) {
+            return NO;
+        }
     }
     return NO;
   });
