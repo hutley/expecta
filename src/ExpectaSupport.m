@@ -13,6 +13,13 @@
 
 @end
 
+@interface NSObject (ExpectaXCTestRecordFailure)
+
+// suppress warning
+- (void)recordFailureWithDescription:(NSString *)description inFile:(NSString *)filename atLine:(NSUInteger)lineNumber expected:(BOOL)expected;
+
+@end
+
 id _EXPObjectify(const char *type, ...) {
   va_list v;
   va_start(v, type);
@@ -111,6 +118,11 @@ void EXPFail(id testCase, int lineNumber, const char *fileName, NSString *messag
       exception = [NSException failureInFile:[NSString stringWithUTF8String:fileName] atLine:lineNumber withDescription:message];
     }
     [testCase failWithException:exception];
+  } else if(testCase && [testCase respondsToSelector:@selector(recordFailureWithDescription:inFile:atLine:expected:)]){
+      [testCase recordFailureWithDescription:message
+                                      inFile:[NSString stringWithUTF8String:fileName]
+                                      atLine:lineNumber
+                                    expected:NO];
   } else {
     [exception raise];
   }
@@ -119,16 +131,13 @@ void EXPFail(id testCase, int lineNumber, const char *fileName, NSString *messag
 NSString *EXPDescribeObject(id obj) {
   if(obj == nil) {
     return @"nil/null";
-  } else if([obj isKindOfClass:[NSValue class]]) {
-    if([obj isKindOfClass:[NSValue class]] && ![obj isKindOfClass:[NSNumber class]]) {
-      void *pointerValue = [obj pointerValue];
-      const char *type = [(NSValue *)obj _EXP_objCType];
-      if(type) {
-        if(strcmp(type, @encode(SEL)) == 0) {
-          return [NSString stringWithFormat:@"@selector(%@)", NSStringFromSelector([obj pointerValue])];
-        } else if(strcmp(type, @encode(Class)) == 0) {
-          return NSStringFromClass(pointerValue);
-        }
+  } else if([obj isKindOfClass:[NSValue class]] && ![obj isKindOfClass:[NSNumber class]]) {
+    const char *type = [(NSValue *)obj _EXP_objCType];
+    if(type) {
+      if(strcmp(type, @encode(SEL)) == 0) {
+        return [NSString stringWithFormat:@"@selector(%@)", NSStringFromSelector([obj pointerValue])];
+      } else if(strcmp(type, @encode(Class)) == 0) {
+        return NSStringFromClass([obj pointerValue]);
       }
     }
   }
@@ -152,6 +161,8 @@ NSString *EXPDescribeObject(id obj) {
       [arr addObject:[NSString stringWithFormat:@"%@ = %@;",EXPDescribeObject(k), EXPDescribeObject(v)]];
     }
     description = [NSString stringWithFormat:@"{%@}", [arr componentsJoinedByString:@" "]];
+  } else if([obj isKindOfClass:[NSAttributedString class]]) {
+    description = [obj string];
   } else {
     description = [description stringByReplacingOccurrencesOfString:@"\n" withString:@"\\n"];
   }

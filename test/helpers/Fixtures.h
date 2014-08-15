@@ -1,5 +1,13 @@
 #import <Foundation/Foundation.h>
 
-@interface Foo : NSObject; @end;
+@protocol Protocol <NSObject> @end
+
+@interface Foo : NSObject
+- (void)fooMethod;
+@end
+
 @interface Bar : Foo; @end;
-@interface Baz : NSObject; @end;
+
+@interface Baz : NSObject <Protocol>
++ (void)bazClassMethod;
+@end
