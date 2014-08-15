@@ -20,5 +20,7 @@
 #import "EXPMatchers+raiseWithReason.h"
 #import "EXPMatchers+respondTo.h"
 #import "EXPMatchers+notify.h"
+#import "EXPMatchers+notifyAny.h"
+#import "EXPMatchers+notifyAll.h"
 #import "EXPMatchers+beginWith.h"
 #import "EXPMatchers+endWith.h"
